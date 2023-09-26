@@ -1,0 +1,5 @@
+/.idea
+/bin
+/.vscode
+/public/output.css
+/.env

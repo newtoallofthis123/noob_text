@@ -1,0 +1,33 @@
+{{template "base.html"}}
+
+<div class="px-3 py-5"> 
+    <div class="flex flex-col justify-center items-center">
+        <form class="border-2 border-r-8 border-b-8 rounded-2xl w-3/5 border-black">
+            <div class="flex flex-row border-b-2 border-black p-1">
+                <input type="text" placeholder="Title of the bin" required="true"
+                    class="w-2/6 text-center text-lg focus:outline-none" name="title" autoComplete="off"
+                    spellCheck="false" id="title" />
+                <input type="text" placeholder="Author Name" required="true"
+                    class="w-2/6 text-center text-lg focus:outline-none" name="author" autoComplete="off"
+                    spellCheck="false" id="title" />
+                <div class="w-1/6 text-center text-lg flex flex-col justify-center items-center">
+                    <p id="result"></p>
+                </div>
+                <button
+                hx-post="/create" method="post"
+                hx-target="#result"
+                hx-swap="innerHTML"
+                class="w-1/6 bg-black text-white rounded-xl text-xl font-bold p-2 m-2 transform duration-500 hover:scale-105 focus:outline-none" type="submit">
+                    Create
+                </button>
+            </div>
+            <textarea name="content" required="true" id="content" class="w-full focus:outline-none p-1 text-base"
+                rows="20" spellCheck="false" cols="10"></textarea>
+        </form>
+    </div>
+</div>
+<style>
+    #content{
+        font-family: 'Jetbrains Mono', 'Courier New', Courier, monospace;
+    }
+</style>
