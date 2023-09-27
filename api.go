@@ -171,6 +171,12 @@ func (api *APIServer) handleSignout(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/")
 }
 
+func (api *APIServer) handleAuthSignout(c *gin.Context) {
+	c.SetCookie("token", "", -1, "/", "localhost", false, true)
+	c.SetCookie("username", "", -1, "/", "localhost", false, true)
+	c.Redirect(http.StatusFound, "/login")
+}
+
 func (api *APIServer) handleHome(c *gin.Context) {
 	api.onlyAuth(c)
 	username, err := c.Cookie("username")
@@ -187,14 +193,22 @@ func (api *APIServer) handleHome(c *gin.Context) {
 	})
 }
 
+func (api *APIServer) handleAbout(c *gin.Context) {
+	c.HTML(http.StatusOK, "about.html", gin.H{})
+}
+
+func (api *APIServer) handleSource(c *gin.Context) {
+	c.Redirect(http.StatusFound, "http://github.com/newtoallofthis123/noob_text")
+}
+
 func (api *APIServer) onlyAuth(c *gin.Context) {
 	cookie, err := c.Cookie("token")
 	if err != nil {
-		c.Redirect(http.StatusFound, "/login")
+		c.Redirect(http.StatusFound, "/about")
 		return
 	}
 	if cookie == "" {
-		c.Redirect(http.StatusFound, "/login")
+		c.Redirect(http.StatusFound, "/about")
 		return
 	}
 
@@ -229,6 +243,9 @@ func (api *APIServer) Start() error {
 	r.GET("/signup", api.handleSignupPage)
 	r.GET("/login", api.handleLoginPage)
 	r.GET("/signout", api.handleSignout)
+	r.GET("/authsignout", api.handleAuthSignout)
+	r.GET("/about", api.handleAbout)
+	r.GET("/source", api.handleSource)
 
 	r.POST("/create", api.handleCreateForm)
 	r.POST("/createUser", api.handleSignup)
