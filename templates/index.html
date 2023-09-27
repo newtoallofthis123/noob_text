@@ -7,9 +7,9 @@
                 <input type="text" placeholder="Title of the bin" required="true"
                     class="w-2/6 text-center text-lg focus:outline-none" name="title" autoComplete="off"
                     spellCheck="false" id="title" />
-                <input type="text" placeholder="Author Name" required="true"
+                <input value="{{ .username }}" readonly type="text" placeholder="Author Name" required="true"
                     class="w-2/6 text-center text-lg focus:outline-none" name="author" autoComplete="off"
-                    spellCheck="false" id="title" />
+                    spellCheck="false" id="author" />
                 <div class="w-1/6 text-center text-lg flex flex-col justify-center items-center">
                     <p id="result"></p>
                 </div>

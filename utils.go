@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetEnv() *Env {
@@ -25,6 +28,19 @@ func GetEnv() *Env {
 	return env
 }
 
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
+func MatchPasswords(toCheck string, hashed string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(toCheck))
+	return err == nil
+}
+
 func RanHash() string {
 	characters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	var slug string
@@ -39,4 +55,30 @@ func RanHash() string {
 	}
 
 	return slug
+}
+
+func CreateJWT(username string) (string, error) {
+	env := GetEnv()
+	claims := &jwt.MapClaims{
+		// expire in like a week or two
+		"expiresAt": time.Hour * 24 * 7 * 2,
+		"username":  username,
+	}
+	secret := env.JwtSecret
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString([]byte(secret))
+}
+
+func ValidateJWT(tokenString string) (*jwt.Token, error) {
+	env := GetEnv()
+	secret := env.JwtSecret
+
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(secret), nil
+	})
 }
