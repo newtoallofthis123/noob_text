@@ -5,6 +5,18 @@
         <h1 class="text-2xl font-bold">
             Hey there, <span class="bg-yellow-200 text-black">{{.username}}!</span>
         </h1>
+        <p id="account"></p>
+        <div class="pt-2 pb-2">
+            <button
+            id="delete"
+            hx-delete="/deleteUser/{{.username}}"
+            hx-confirm="Are you sure you want to delete your account? This action cannot be undone."
+            hx-target="#account"
+            hx-swap="innerHTML"
+            >
+                😞 Delete Account
+            </button>
+        </div>
         <p class="text-lg py-2">
             Here are all of your posts 😎
         </p>
@@ -49,4 +61,11 @@
         for (var i = 0; i < emoji.length; i++) {
             emoji[i].innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
         }
+
+    var deleteBtn = document.getElementById("delete");
+    deleteBtn.addEventListener("htmx:afterSwap", function(event) {
+        if(event.detail.target.id == "account") {
+            window.location.href = "/signout";
+        }
+    })
 </script>

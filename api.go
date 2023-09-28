@@ -177,6 +177,27 @@ func (api *APIServer) handleDelete(c *gin.Context) {
 	c.String(200, "Deleted!")
 }
 
+func (api *APIServer) handleUserDelete(c *gin.Context) {
+	toDelete := c.Param("username")
+	api.onlyAuth(c)
+	username := api.getUsername(c)
+	if username != toDelete {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "You can only delete your own account",
+		})
+		return
+	}
+
+	err := api.store.DeleteUser(username)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+}
+
 func (api *APIServer) handleSearch(c *gin.Context) {
 	query := strings.ToLower(c.Query("q"))
 	docs, err := api.store.GetAll()
@@ -443,6 +464,7 @@ func (api *APIServer) Start() error {
 	r.POST("/update_form/:hash", api.handleUpdate)
 
 	r.DELETE("/delete/:hash", api.handleDelete)
+	r.DELETE("/deleteUser/:username", api.handleUserDelete)
 
 	err = r.Run(api.listenAddr)
 	return err

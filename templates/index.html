@@ -4,7 +4,7 @@
     <div class="flex flex-col justify-center items-center">
         <form class="border-2 border-r-8 border-b-8 rounded-2xl w-3/5 border-black">
             <div class="flex flex-row border-b-2 border-black p-1">
-                <input type="text" placeholder="Title of the bin" required="true"
+                <input type="text" placeholder="📝 Title of the bin" required="true"
                     class="w-3/6 text-center text-lg focus:outline-none" name="title" autoComplete="off"
                     spellCheck="false" id="title" />
                 <div class="w-2/6 text-center text-lg flex flex-col justify-center items-center">
@@ -15,7 +15,7 @@
                 hx-target="#result"
                 hx-swap="innerHTML"
                 class="w-1/6 bg-black text-white rounded-xl text-xl font-bold p-2 m-2 transform duration-500 hover:scale-105 focus:outline-none" type="submit">
-                    Create
+                    ✨ Create
                 </button>
             </div>
             <textarea name="content" required="true" id="content" class="w-full focus:outline-none p-1 text-base"
@@ -23,7 +23,7 @@
             <div class="w-full text-lg flex flex-row justify-around border-t-2 border-black p-2">
                 <div class="w-1/2 flex flex-row">
                     <p>
-                        Writing as &nbsp;
+                        ✒️ Writing as &nbsp;
                     </p>
                     <input value="{{ .username }}" readonly type="text" placeholder="Author Name" required="true"
                         class="text-lg focus:outline-none" name="author" autoComplete="off" spellCheck="false" id="author" />
@@ -44,6 +44,6 @@
     var time = document.getElementById("time");
     setInterval(function() {
         date = new Date();
-        time.innerHTML = date.toLocaleString();
+        time.innerHTML = "📅 " + date.toLocaleString();
     }, 1000);
 </script>

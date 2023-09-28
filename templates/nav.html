@@ -15,9 +15,19 @@
                     🔒Login
                 </a>
             </p>
+            <p id="signup" class="p-2">
+                <a href="/signup">
+                    👋 SignUp
+                </a>
+            </p>
             <p id="account" class="p-2">
                 <a href="/account">
                     🧑‍🦰Account
+                </a>
+            </p>
+            <p id="signout" class="p-2">
+                <a href="/signout">
+                    😞 SignOut
                 </a>
             </p>
             <p class="p-2">
@@ -36,8 +46,10 @@
         if(event.detail.target.id == "authcheck") {
             if(event.detail.target.innerHTML.trim() == "true") {
                 document.getElementById("login").classList.add("hidden");
+                document.getElementById("signup").classList.add("hidden");
             } else {
                 document.getElementById("account").classList.add("hidden");
+                document.getElementById("signout").classList.add("hidden");
             }
         }
     })
