@@ -246,6 +246,20 @@ func (api *APIServer) handleAccount(c *gin.Context) {
 	})
 }
 
+func (api *APIServer) handleGetUserDocs(c *gin.Context) {
+	username := c.Param("username")
+	docs, err := api.store.GetUserDocs(username)
+	if err != nil {
+		c.String(500, err.Error())
+		return
+	}
+
+	c.HTML(http.StatusOK, "user.html", gin.H{
+		"username": username,
+		"docs":     docs,
+	})
+}
+
 func (api *APIServer) onlyAuth(c *gin.Context) {
 	cookie, err := c.Cookie("token")
 	if err != nil {
@@ -293,6 +307,7 @@ func (api *APIServer) Start() error {
 	r.GET("/about", api.handleAbout)
 	r.GET("/source", api.handleSource)
 	r.GET("/account", api.handleAccount)
+	r.GET("/user/:username", api.handleGetUserDocs)
 
 	r.POST("/create", api.handleCreateForm)
 	r.POST("/createUser", api.handleSignup)
