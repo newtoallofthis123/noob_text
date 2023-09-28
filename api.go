@@ -36,8 +36,15 @@ func (api *APIServer) handleGetByHash(c *gin.Context) {
 
 func (api *APIServer) handleCreateForm(c *gin.Context) {
 	title := c.DefaultPostForm("title", "Untitled")
+	if title == "" {
+		title = "Untitled"
+	}
 	author := c.DefaultPostForm("author", "Anonymous")
 	content := c.PostForm("content")
+	if content == "" {
+		c.String(400, "Content cannot be empty")
+		return
+	}
 	hash := RanHash()
 
 	req := &CreateDocumentRequest{
@@ -53,6 +60,121 @@ func (api *APIServer) handleCreateForm(c *gin.Context) {
 		return
 	}
 	c.String(200, "<a class='text-blue-600' href='/docs/"+hash+"'>/docs/"+hash+"</a>")
+}
+
+func (api *APIServer) handleUpdatePage(c *gin.Context) {
+	api.onlyAuth(c)
+	hash := c.Param("hash")
+	doc, err := api.store.GetByHash(hash)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			c.JSON(404, gin.H{"error": "Document not found"})
+			return
+		}
+		c.JSON(500, err)
+		return
+	}
+	if doc.Author != api.getUsername(c) {
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	c.HTML(http.StatusOK, "update.html", gin.H{
+		"hash":       doc.Hash,
+		"title":      doc.Title,
+		"author":     doc.Author,
+		"content":    doc.Content,
+		"created_at": doc.CreatedAt,
+	})
+}
+
+func (api *APIServer) handleUpdate(c *gin.Context) {
+	api.onlyAuth(c)
+	hash := c.Param("hash")
+	doc, err := api.store.GetByHash(hash)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			c.JSON(404, gin.H{"error": "Document not found"})
+			return
+		}
+		c.JSON(500, err)
+		return
+	}
+	if doc.Author != api.getUsername(c) {
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	title := c.DefaultPostForm("title", "Untitled")
+	if title == "" {
+		title = "Untitled"
+	}
+	content := c.PostForm("content")
+	if content == "" {
+		c.String(400, "Content cannot be empty")
+		return
+	}
+
+	req := &UpdateDocumentRequest{
+		Hash:    hash,
+		Title:   title,
+		Content: content,
+	}
+
+	err = api.store.UpdateDoc(req)
+	if err != nil {
+		c.String(500, err.Error())
+		return
+	}
+
+	c.String(200, "Updated!")
+}
+
+func (api *APIServer) handleSearchPage(c *gin.Context) {
+	query := strings.ToLower(c.Query("q"))
+	docs, err := api.store.GetAll()
+	if err != nil {
+		c.JSON(500, err)
+		return
+	}
+
+	var results []Document
+
+	for _, patient := range docs {
+		docString := fmt.Sprintf("%v", patient)
+		//remove all the -, :, _ and lowercase the string
+		docString = strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(docString, "-", ""), ":", ""), "{", ""))
+		if strings.Contains(docString, query) {
+			results = append(results, patient)
+		}
+	}
+
+	c.JSON(200, results)
+}
+
+func (api *APIServer) handleDelete(c *gin.Context) {
+	hash := c.Param("hash")
+	doc, err := api.store.GetByHash(hash)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			c.JSON(404, gin.H{"error": "Document not found"})
+			return
+		}
+		c.JSON(500, err)
+		return
+	}
+	if doc.Author != api.getUsername(c) {
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	err = api.store.DeleteDoc(hash)
+	if err != nil {
+		c.JSON(500, err)
+		return
+	}
+
+	c.String(200, "Deleted!")
 }
 
 func (api *APIServer) handleSearch(c *gin.Context) {
@@ -74,7 +196,10 @@ func (api *APIServer) handleSearch(c *gin.Context) {
 		}
 	}
 
-	c.JSON(200, results)
+	c.HTML(http.StatusOK, "search.html", gin.H{
+		"results": results,
+		"num":     len(results),
+	})
 }
 
 func (api *APIServer) handleSignup(c *gin.Context) {
@@ -298,7 +423,9 @@ func (api *APIServer) Start() error {
 	})
 	r.GET("/", api.handleHome)
 	r.GET("/docs/:hash", api.handleGetByHash)
+	r.GET("/searchDoc", api.handleSearchPage)
 	r.GET("/search", api.handleSearch)
+	r.GET("/create", api.handleCreateForm)
 	r.GET("/signup", api.handleSignupPage)
 	r.GET("/login", api.handleLoginPage)
 	r.GET("/signout", api.handleSignout)
@@ -308,10 +435,14 @@ func (api *APIServer) Start() error {
 	r.GET("/source", api.handleSource)
 	r.GET("/account", api.handleAccount)
 	r.GET("/user/:username", api.handleGetUserDocs)
+	r.GET("/update/:hash", api.handleUpdatePage)
 
 	r.POST("/create", api.handleCreateForm)
 	r.POST("/createUser", api.handleSignup)
 	r.POST("/loginUser", api.handleLogin)
+	r.POST("/update_form/:hash", api.handleUpdate)
+
+	r.DELETE("/delete/:hash", api.handleDelete)
 
 	err = r.Run(api.listenAddr)
 	return err

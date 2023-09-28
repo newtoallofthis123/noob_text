@@ -1,40 +1,30 @@
 <nav class="flex flex-row justify-center items-baseline p-1">
-    <div class="w-1/3">
+    <div class="w-1/2">
         <h2 class="text-3xl font-bold">
             <a href="/">✨ NoobText</a>
         </h2>
     </div>
-    <div class="flex flex-row items-center justify-between w-2/3">
-        <ul class="text-lg flex flex-row justify-between">
-            <li class="p-2">
-                <a href="/about">
-                    ❓About
-                </a>
-            </li>
-            <li class="p-2">
-                <a href="/editor">
-                    ✒️Editor
-                </a>
-            </li>
-            <li class="p-2">
-                <a href="/source">
-                    😺Source
-                </a>
-            </li>
-            <li id="login" class="p-2">
+    <div class="flex flex-row justify-end items-center w-1/2 pr-5">
+        <form action="/search" class="border-2 border-neutral-600 rounded-xl mx-5">
+            <input class="p-1 focus:outline-none rounded-xl focus-within:outline-none" autocomplete="off" spellcheck="false" type="search" name="q" id="q">
+            <button class="p-0.5" type="submit">🔍</button>
+        </form>
+        <div class="flex flex-row">
+            <p id="login" class="p-2">
                 <a href="/login">
                     🔒Login
                 </a>
-            </li>
-            <li id="account" class="p-2">
+            </p>
+            <p id="account" class="p-2">
                 <a href="/account">
                     🧑‍🦰Account
                 </a>
-            </li>
-        </ul>
-        <div class="border-2 border-neutral-600 rounded-md mx-5">
-            <input class="p-1 focus:outline-none rounded-md focus-within:outline-none" autocomplete="off" spellcheck="false" type="search" name="search" id="search">
-            <button class="p-0.5" type="submit">🔍</button>
+            </p>
+            <p class="p-2">
+                <a href="/about">
+                    ❓About
+                </a>
+            </p>
         </div>
         <p class="hidden" id="authcheck"></p>
     </div>

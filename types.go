@@ -35,3 +35,9 @@ type User struct {
 	Password  string
 	CreatedAt string
 }
+
+type UpdateDocumentRequest struct {
+	Hash    string
+	Title   string
+	Content string
+}

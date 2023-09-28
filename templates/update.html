@@ -1,0 +1,54 @@
+{{template "base.html"}}
+
+<div class="px-3 py-5">
+    <div class="flex flex-col justify-center items-center">
+        <form class="border-2 border-r-8 border-b-8 rounded-2xl w-3/5 border-black">
+            <div class="flex flex-row border-b-2 border-black p-1">
+                <input type="text" value="{{.title}}" placeholder="Title of the bin" required="true"
+                    class="w-3/6 text-center text-lg focus:outline-none" name="title" autoComplete="off"
+                    spellCheck="false" id="title" />
+                <div class="w-2/6 text-center text-lg flex flex-col justify-center items-center">
+                    <p id="result"></p>
+                </div>
+                <button hx-post="/update_form/{{.hash}}" method="post" hx-target="#result" hx-swap="innerHTML"
+                    class="w-1/6 bg-black text-white rounded-xl text-xl font-bold p-2 m-2 transform duration-500 hover:scale-105 focus:outline-none"
+                    type="submit">
+                    Update
+                </button>
+            </div>
+            <textarea name="content" required="true" id="content" class="w-full focus:outline-none p-1 text-base"
+                rows="20" spellCheck="false" cols="10">{{.content}}</textarea>
+            <div class="w-full text-lg flex flex-row justify-around border-t-2 border-black p-2">
+                <div class="w-1/2 flex flex-row">
+                    <p>
+                        Written by &nbsp; {{.author}}
+                    </p>
+                </div>
+                <div class="w-1/2 flex flex-row justify-end items-center">
+                    <p id="time">{{.created_at}}</p>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+    #content {
+        font-family: 'Jetbrains Mono', 'Courier New', Courier, monospace;
+    }
+</style>
+<script>
+    var time = document.getElementById("time");
+    date = new Date();
+    time.innerHTML = date.toLocaleString();
+
+    var result = document.getElementById("result");
+    result.addEventListener("htmx:afterSwap", function(event) {
+        if(event.detail.target.id == "result") {
+            if(event.detail.target.innerHTML.trim() == "Updated!") {
+                setTimeout(function() {
+                    window.location.href = "/docs/{{.hash}}";
+                }, 2000);
+            }
+        }
+    })
+</script>

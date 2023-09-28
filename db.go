@@ -15,6 +15,8 @@ type Store interface {
 	CreateUser(req CreateUserRequest) error
 	GetUser(username string) (User, error)
 	GetUserDocs(username string) ([]Document, error)
+	UpdateDoc(req *UpdateDocumentRequest) error
+	DeleteDoc(hash string) error
 }
 
 type DBInstance struct {
@@ -168,4 +170,22 @@ func (pq *DBInstance) GetUserDocs(username string) ([]Document, error) {
 	}
 
 	return documents, nil
+}
+
+func (pq *DBInstance) UpdateDoc(req *UpdateDocumentRequest) error {
+	query := `
+	UPDATE content SET title=$1, content=$2, updated_at=NOW() WHERE hash=$3
+	`
+
+	_, err := pq.db.Exec(query, req.Title, req.Content, req.Hash)
+	return err
+}
+
+func (pq *DBInstance) DeleteDoc(hash string) error {
+	query := `
+	DELETE FROM content WHERE hash=$1
+	`
+
+	_, err := pq.db.Exec(query, hash)
+	return err
 }
