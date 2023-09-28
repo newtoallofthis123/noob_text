@@ -177,17 +177,46 @@ func (api *APIServer) handleAuthSignout(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/login")
 }
 
-func (api *APIServer) handleHome(c *gin.Context) {
-	api.onlyAuth(c)
+func (api *APIServer) handleCheckAuth(c *gin.Context) {
+	cookie, err := c.Cookie("token")
+	if err != nil {
+		c.String(http.StatusOK, "false")
+		return
+	}
+
+	jwt, err := ValidateJWT(cookie)
+	if err != nil {
+		c.String(http.StatusOK, "false")
+		return
+	}
+
+	if !jwt.Valid {
+		c.String(http.StatusOK, "false")
+		return
+	}
+
+	c.String(http.StatusOK, "true")
+}
+
+func (api *APIServer) getUsername(c *gin.Context) string {
 	username, err := c.Cookie("username")
 	if err != nil {
 		c.Redirect(http.StatusFound, "/authsignout")
-		return
+		return ""
 	}
 	if username == "" {
 		c.Redirect(http.StatusFound, "/authsignout")
-		return
+		return ""
 	}
+
+	return username
+}
+
+func (api *APIServer) handleHome(c *gin.Context) {
+	api.onlyAuth(c)
+
+	var username string = api.getUsername(c)
+
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"username": username,
 	})
@@ -199,6 +228,22 @@ func (api *APIServer) handleAbout(c *gin.Context) {
 
 func (api *APIServer) handleSource(c *gin.Context) {
 	c.Redirect(http.StatusFound, "http://github.com/newtoallofthis123/noob_text")
+}
+
+func (api *APIServer) handleAccount(c *gin.Context) {
+	api.onlyAuth(c)
+	username := api.getUsername(c)
+
+	docs, err := api.store.GetUserDocs(username)
+	if err != nil {
+		c.String(500, err.Error())
+		return
+	}
+
+	c.HTML(http.StatusOK, "account.html", gin.H{
+		"username": username,
+		"docs":     docs,
+	})
 }
 
 func (api *APIServer) onlyAuth(c *gin.Context) {
@@ -244,8 +289,10 @@ func (api *APIServer) Start() error {
 	r.GET("/login", api.handleLoginPage)
 	r.GET("/signout", api.handleSignout)
 	r.GET("/authsignout", api.handleAuthSignout)
+	r.GET("/checkauth", api.handleCheckAuth)
 	r.GET("/about", api.handleAbout)
 	r.GET("/source", api.handleSource)
+	r.GET("/account", api.handleAccount)
 
 	r.POST("/create", api.handleCreateForm)
 	r.POST("/createUser", api.handleSignup)

@@ -14,6 +14,7 @@ type Store interface {
 	GetAll() ([]Document, error)
 	CreateUser(req CreateUserRequest) error
 	GetUser(username string) (User, error)
+	GetUserDocs(username string) ([]Document, error)
 }
 
 type DBInstance struct {
@@ -142,4 +143,29 @@ func (pq *DBInstance) GetUser(username string) (User, error) {
 	}
 
 	return user, nil
+}
+
+func (pq *DBInstance) GetUserDocs(username string) ([]Document, error) {
+	query := `
+	SELECT * from content WHERE author=$1
+	`
+
+	var documents []Document
+
+	rows, err := pq.db.Query(query, username)
+	if err != nil {
+		return documents, err
+	}
+
+	for rows.Next() {
+		var document Document
+		err := rows.Scan(&document.Hash, &document.Author, &document.Title, &document.Content, &document.CreatedAt, &document.UpdatedAt)
+		if err != nil {
+			return documents, err
+		}
+
+		documents = append(documents, document)
+	}
+
+	return documents, nil
 }
