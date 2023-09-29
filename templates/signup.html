@@ -14,3 +14,10 @@
         class="bg-black text-white p-2 rounded-md" type="submit">Submit</button>
     </form>
 </div>
+<script>
+    document.getElementById("message").addEventListener("htmx:afterSwap", (event) => {
+        if(document.getElementById("message").innerHTML == "User created"){
+            window.location.href = "/login";
+        } 
+    })
+</script>

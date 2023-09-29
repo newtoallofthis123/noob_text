@@ -314,6 +314,7 @@ func (api *APIServer) handleLoginPage(c *gin.Context) {
 
 func (api *APIServer) handleSignout(c *gin.Context) {
 	c.SetCookie("token", "", -1, "/", "localhost", false, true)
+	c.SetCookie("username", "", -1, "/", "localhost", false, true)
 	c.Redirect(http.StatusFound, "/")
 }
 

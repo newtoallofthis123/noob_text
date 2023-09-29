@@ -3,7 +3,9 @@ module github.com/newtoallofthis123/noob_text
 go 1.21.1
 
 require (
+	github.com/aofei/cameron v1.2.1 // indirect
 	github.com/bytedance/sonic v1.10.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
