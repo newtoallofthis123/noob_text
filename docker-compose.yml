@@ -1,0 +1,33 @@
+services:
+  database:
+    image: postgres
+    restart: always
+
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${USER}
+      - POSTGRES_PASSWORD=${PASSWORD}
+      - POSTGRES_DB=${DB}
+    volumes:
+      - data:/var/lib/postgresql/data
+    ports:
+      - 5432
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      -  GIN_MODE=release
+    ports:
+      - 3579:3579
+    depends_on:
+      - database
+    networks:
+      - default
+
+volumes:
+  data:

@@ -393,6 +393,9 @@ func (api *APIServer) handleAccount(c *gin.Context) {
 	})
 }
 
+// handleGetUserDocs is a handler for the GET /user/:username route which
+// renders a list of documents for a given user.
+
 func (api *APIServer) handleGetUserDocs(c *gin.Context) {
 	username := c.Param("username")
 	docs, err := api.store.GetUserDocs(username)

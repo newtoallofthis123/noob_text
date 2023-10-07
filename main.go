@@ -15,7 +15,7 @@ func main() {
 	}
 
 	api := APIServer{
-		listenAddr: "localhost:3579",
+		listenAddr: ":3579",
 		store:      store,
 	}
 

@@ -25,6 +25,20 @@ type DBInstance struct {
 }
 
 func (pq *DBInstance) createTable() error {
+	user_query := `
+		CREATE TABLE IF NOT EXISTS users(
+			username TEXT PRIMARY KEY,
+			password TEXT NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW()
+		)
+	`
+
+	_, err := pq.db.Exec(user_query)
+
+	if err != nil {
+		return err
+	}
+
 	query := `
 		CREATE TABLE IF NOT EXISTS content(
 			hash TEXT UNIQUE PRIMARY KEY,
@@ -36,21 +50,7 @@ func (pq *DBInstance) createTable() error {
 		)
 	`
 
-	_, err := pq.db.Exec(query)
-
-	if err != nil {
-		return err
-	}
-
-	user_query := `
-		CREATE TABLE IF NOT EXISTS users(
-			username TEXT PRIMARY KEY,
-			password TEXT NOT NULL,
-			created_at TIMESTAMP DEFAULT NOW()
-		)
-	`
-
-	_, err = pq.db.Exec(user_query)
+	_, err = pq.db.Exec(query)
 
 	return err
 }
@@ -58,6 +58,7 @@ func (pq *DBInstance) createTable() error {
 func NewStoreInstance() (*DBInstance, error) {
 	env := GetEnv()
 	connStr := fmt.Sprintf("user=%s password=%s host=%s dbname=%s port=%s sslmode=disable", env.User, env.Password, env.URL, env.DB, env.PORT)
+	fmt.Println(connStr)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
