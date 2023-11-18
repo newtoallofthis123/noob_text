@@ -12,11 +12,27 @@ import (
 type APIServer struct {
 	listenAddr string
 	store      Store
+	cache      Cache
 }
 
 func (api *APIServer) handleGetByHash(c *gin.Context) {
 	hash := c.Param("hash")
-	doc, err := api.store.GetByHash(hash)
+
+	doc, err := api.cache.GetDoc(hash)
+	fmt.Println("Getting using hash")
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		c.HTML(http.StatusOK, "doc.html", gin.H{
+			"title":      doc.Title,
+			"author":     doc.Author,
+			"content":    doc.Content,
+			"created_at": doc.CreatedAt,
+		})
+		return
+	}
+
+	doc, err = api.store.GetByHash(hash)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			c.JSON(404, gin.H{"error": "Document not found"})
@@ -24,6 +40,11 @@ func (api *APIServer) handleGetByHash(c *gin.Context) {
 		}
 		c.JSON(500, err)
 		return
+	}
+
+	err = api.cache.CreateDoc(doc)
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	c.HTML(http.StatusOK, "doc.html", gin.H{
@@ -59,6 +80,7 @@ func (api *APIServer) handleCreateForm(c *gin.Context) {
 		c.String(500, err.Error())
 		return
 	}
+	// we choose not to cache a new document because it is unlikely to be accessed again
 	c.String(200, "<a class='text-blue-600' href='/docs/"+hash+"'>/docs/"+hash+"</a>")
 }
 
@@ -115,6 +137,9 @@ func (api *APIServer) handleUpdate(c *gin.Context) {
 		return
 	}
 
+	//delete the old document from cache
+	api.cache.DeleteDoc(hash)
+
 	req := &UpdateDocumentRequest{
 		Hash:    hash,
 		Title:   title,
@@ -126,6 +151,9 @@ func (api *APIServer) handleUpdate(c *gin.Context) {
 		c.String(500, err.Error())
 		return
 	}
+
+	// re-caching the doc requires a new query to the database
+	// which is not ideal
 
 	c.String(200, "Updated!")
 }
@@ -174,6 +202,9 @@ func (api *APIServer) handleDelete(c *gin.Context) {
 		return
 	}
 
+	//delete the old document from cache
+	api.cache.DeleteDoc(hash)
+
 	c.String(200, "Deleted!")
 }
 
@@ -196,6 +227,9 @@ func (api *APIServer) handleUserDelete(c *gin.Context) {
 		})
 		return
 	}
+
+	//delete the old document from cache
+	api.cache.DeleteUser(username)
 }
 
 func (api *APIServer) handleSearch(c *gin.Context) {
@@ -208,12 +242,12 @@ func (api *APIServer) handleSearch(c *gin.Context) {
 
 	var results []Document
 
-	for _, patient := range docs {
-		docString := fmt.Sprintf("%v", patient)
+	for _, doc := range docs {
+		docString := fmt.Sprintf("%v", doc)
 		//remove all the -, :, _ and lowercase the string
 		docString = strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(docString, "-", ""), ":", ""), "{", ""))
 		if strings.Contains(docString, query) {
-			results = append(results, patient)
+			results = append(results, doc)
 		}
 	}
 

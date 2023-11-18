@@ -1,12 +1,16 @@
 package main
 
 type Env struct {
-	User      string
-	Password  string
-	DB        string
-	PORT      string
-	URL       string
-	JwtSecret string
+	User          string
+	Password      string
+	DB            string
+	PORT          string
+	URL           string
+	JwtSecret     string
+	RedisURL      string
+	RedisPort     string
+	RedisDB       string
+	RedisPassword string
 }
 
 type CreateDocumentRequest struct {
@@ -17,12 +21,12 @@ type CreateDocumentRequest struct {
 }
 
 type Document struct {
-	Hash      string
-	Author    string
-	Title     string
-	Content   string
-	CreatedAt string
-	UpdatedAt string
+	Hash      string `json:"hash"`
+	Author    string `json:"author"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 type CreateUserRequest struct {
@@ -30,10 +34,11 @@ type CreateUserRequest struct {
 	Password string
 }
 
+// Introducing the JSON tag for caching
 type User struct {
-	Username  string
-	Password  string
-	CreatedAt string
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	CreatedAt string `json:"created_at"`
 }
 
 type UpdateDocumentRequest struct {

@@ -3,3 +3,4 @@
 /.vscode
 /public/output.css
 /.env
+/.env.prod

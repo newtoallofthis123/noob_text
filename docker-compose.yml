@@ -4,7 +4,7 @@ services:
     restart: always
 
     env_file:
-      - .env
+      - .env.prod
     environment:
       - POSTGRES_USER=${USER}
       - POSTGRES_PASSWORD=${PASSWORD}
@@ -14,18 +14,24 @@ services:
     ports:
       - 5432
 
+  cache:
+    image: redis
+    restart: always
+
+    ports:
+      - 6379
+
   server:
     build:
       context: .
       dockerfile: Dockerfile
     env_file:
-      - .env
-    environment:
-      -  GIN_MODE=release
+      - .env.prod
     ports:
       - 3579:3579
     depends_on:
       - database
+      - cache
     networks:
       - default
 
