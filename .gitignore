@@ -4,3 +4,4 @@
 /public/output.css
 /.env
 /.env.prod
+/logs

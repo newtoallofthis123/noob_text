@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -467,12 +468,30 @@ func (api *APIServer) onlyAuth(c *gin.Context) {
 }
 
 func (api *APIServer) Start() error {
+
+	// use log file as gin's output
+	// check if logs folder exists
+	if _, err := os.Stat("logs"); os.IsNotExist(err) {
+		os.Mkdir("logs", 0755)
+	}
+
+	_, err := os.Create(fmt.Sprintf("logs/%s.log", get_date()))
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(fmt.Sprintf("logs/%s.log", get_date()), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+
 	r := gin.Default()
+	gin.DefaultWriter = f
 
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/static", "./public")
 
-	err := r.SetTrustedProxies(nil)
+	err = r.SetTrustedProxies(nil)
 	if err != nil {
 		return err
 	}
@@ -503,6 +522,8 @@ func (api *APIServer) Start() error {
 
 	r.DELETE("/delete/:hash", api.handleDelete)
 	r.DELETE("/deleteUser/:username", api.handleUserDelete)
+
+	fmt.Println("Listening on", api.listenAddr)
 
 	err = r.Run(api.listenAddr)
 	return err

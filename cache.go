@@ -48,7 +48,7 @@ func (r *RedisClient) CreateUser(user User) error {
 		fmt.Println(err)
 		return err
 	}
-	// convert the marshalled json to a strin
+	// convert the marshalled json to a string
 	r.client.Set(r.ctx, user.Username, string(json_encoded), time.Second*3600)
 	return nil
 }

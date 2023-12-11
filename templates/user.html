@@ -1,35 +1,37 @@
 {{template "base.html"}}
 
-<div class="flex flex-col justify-center items-center py-5">
-    <div class="w-3/5">
-        <h1 class="text-2xl font-bold">
-            Viewing user <span class="bg-yellow-200 text-black">{{.username}}!</span>
-        </h1>
-        <p class="text-lg py-2">
-            Here are all of posts
-        </p>
-        <ul>
-            {{range .docs}}
-            <a href="/docs/{{ .Hash }}">
-                <li class="py-2">
-                    <h2 class="text-xl pb-1">{{.Title}}</h2>
-                    <p class="doc_content">{{.Content}}</p>
-                    <p class="created_at">{{.CreatedAt}}</p>
-                </li>
-            </a>
-            {{end}}
-        </ul>
+<body>
+    <div class="flex flex-col justify-center items-center py-5">
+        <div class="w-3/5">
+            <h1 class="text-2xl font-bold">
+                Viewing user
+                <span class="bg-yellow-200 text-black">{{.username}}!</span>
+            </h1>
+            <p class="text-lg py-2">Here are all of posts</p>
+            <ul>
+                {{range .docs}}
+                <a href="/docs/{{ .Hash }}">
+                    <li class="py-2">
+                        <h2 class="text-xl pb-1">{{.Title}}</h2>
+                        <p class="doc_content">{{.Content}}</p>
+                        <p class="created_at">{{.CreatedAt}}</p>
+                    </li>
+                </a>
+                {{end}}
+            </ul>
+        </div>
     </div>
-</div>
+</body>
 <script>
-    var created_at = document.getElementsByClassName("created_at");
-    for(var i = 0; i < created_at.length; i++) {
+    var created_at = document.getElementsByClassName('created_at');
+    for (var i = 0; i < created_at.length; i++) {
         var date = new Date(created_at[i].innerHTML.trim());
         created_at[i].innerHTML = date.toLocaleString();
     }
 
-    var doc_content = document.getElementsByClassName("doc_content");
-    for(var i = 0; i < doc_content.length; i++) {
-        doc_content[i].innerHTML = doc_content[i].innerHTML.slice(0, 200).trim() + "...";
+    var doc_content = document.getElementsByClassName('doc_content');
+    for (var i = 0; i < doc_content.length; i++) {
+        doc_content[i].innerHTML =
+            doc_content[i].innerHTML.slice(0, 200).trim() + '...';
     }
 </script>
