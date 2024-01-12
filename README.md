@@ -14,10 +14,12 @@ However, HTMX changed the way I think about servers. I am not saying that I am g
 - PostgreSQL
 
 Here's all the things I want to implement in this project:
+(I might have already implemented a few)
 
-- [ ] CRUD operations
-- [ ] Authentication
-- [ ] Dynamic routing
+- [x] CRUD operations
+- [x] Authentication
+- [x] Dynamic routing
+- [x] Redis Cache
 
 What all are done? None for now. I am just starting out. I will update this as I go along.
 
