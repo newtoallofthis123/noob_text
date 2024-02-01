@@ -1,0 +1,51 @@
+package templates
+
+import "github.com/newtoallofthis123/noob_text/utils"
+import "fmt"
+
+templ Search(results []utils.Document, num int) {
+	<body>
+		<div class="flex flex-col justify-center items-center">
+			<ul class="w-3/5">
+				if len(results) > 0 {
+					<p class="text-xl font-bold py-4">
+						🟢  { fmt.Sprintf("%d", num) } Results found!
+					</p>
+					for _, doc := range results {
+						<a href={ templ.SafeURL("/docs/" + doc.Hash) }>
+							<li class="py-3">
+								<h2 class="text-xl pb-1">
+									<span class="emoji"></span>{ doc.Title }
+								</h2>
+								<p class="pb-">✒️ { doc.Author }</p>
+								<p class="doc_content">{ doc.Content }</p>
+								<p class="created_at">{ doc.CreatedAt }</p>
+							</li>
+						</a>
+					}
+				} else {
+					<p class="text-xl">No results found!</p>
+				}
+			</ul>
+		</div>
+	</body>
+	<script>
+    var created_at = document.getElementsByClassName('created_at');
+    for (var i = 0; i < created_at.length; i++) {
+        var date = new Date(created_at[i].innerHTML.trim());
+        created_at[i].innerHTML = date.toLocaleString();
+    }
+
+    var doc_content = document.getElementsByClassName('doc_content');
+    for (var i = 0; i < doc_content.length; i++) {
+        doc_content[i].innerHTML =
+            doc_content[i].innerHTML.slice(0, 200).trim() + '...';
+    }
+
+    emojis = ['🍕', '😺', '📟', '🪴', '🌲', '🌳', '🌵', '🌿', '🍁'];
+    var emoji = document.getElementsByClassName('emoji');
+    for (var i = 0; i < emoji.length; i++) {
+        emoji[i].innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+    }
+</script>
+}

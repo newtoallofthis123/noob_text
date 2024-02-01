@@ -1,4 +1,4 @@
-package main
+package utils
 
 type Env struct {
 	User          string

@@ -5,3 +5,5 @@
 /.env
 /.env.prod
 /logs
+/**/*_templ.go
+/tmp

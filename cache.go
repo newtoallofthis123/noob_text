@@ -7,15 +7,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/newtoallofthis123/noob_text/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 type Cache interface {
-	CreateUser(user User) error
-	CreateDoc(doc Document) error
-	GetUser(username string) (User, error)
-	GetDoc(hash string) (Document, error)
-	GetAllDocs() ([]Document, error)
+	CreateUser(user utils.User) error
+	CreateDoc(doc utils.Document) error
+	GetUser(username string) (utils.User, error)
+	GetDoc(hash string) (utils.Document, error)
+	GetAllDocs() ([]utils.Document, error)
 	DeleteUser(username string)
 	DeleteDoc(hash string)
 }
@@ -27,7 +28,7 @@ type RedisClient struct {
 
 // NewClient returns a new redis client
 func NewRedisClient() (*RedisClient, error) {
-	env := GetEnv()
+	env := utils.GetEnv()
 	db, err := strconv.Atoi(env.RedisDB)
 	if err != nil {
 		fmt.Println("The redis db is not a number")
@@ -42,7 +43,7 @@ func NewRedisClient() (*RedisClient, error) {
 	}, nil
 }
 
-func (r *RedisClient) CreateUser(user User) error {
+func (r *RedisClient) CreateUser(user utils.User) error {
 	json_encoded, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
@@ -53,7 +54,7 @@ func (r *RedisClient) CreateUser(user User) error {
 	return nil
 }
 
-func (r *RedisClient) CreateDoc(doc Document) error {
+func (r *RedisClient) CreateDoc(doc utils.Document) error {
 	json_encoded, err := json.Marshal(doc)
 	if err != nil {
 		fmt.Println(err)
@@ -63,34 +64,34 @@ func (r *RedisClient) CreateDoc(doc Document) error {
 	return nil
 }
 
-func (r *RedisClient) GetUser(username string) (User, error) {
-	var user User
+func (r *RedisClient) GetUser(username string) (utils.User, error) {
+	var user utils.User
 	json_string, err := r.client.Get(r.ctx, username).Result()
 	if err != nil {
-		return User{}, err
+		return utils.User{}, err
 	}
 	json.Unmarshal([]byte(json_string), &user)
 	if user.Username == "" {
-		return User{}, fmt.Errorf("User not found")
+		return utils.User{}, fmt.Errorf("user not found")
 	}
 	return user, nil
 }
 
-func (r *RedisClient) GetDoc(hash string) (Document, error) {
-	var doc Document
+func (r *RedisClient) GetDoc(hash string) (utils.Document, error) {
+	var doc utils.Document
 	json_string, err := r.client.Get(r.ctx, hash).Result()
 	if err != nil {
-		return Document{}, err
+		return utils.Document{}, err
 	}
 	json.Unmarshal([]byte(json_string), &doc)
 	if doc.Hash == "" {
-		return Document{}, fmt.Errorf("Document not found")
+		return utils.Document{}, fmt.Errorf("document not found")
 	}
 	return doc, nil
 }
 
-func (r *RedisClient) GetAllDocs() ([]Document, error) {
-	var docs []Document
+func (r *RedisClient) GetAllDocs() ([]utils.Document, error) {
+	var docs []utils.Document
 	keys, err := r.client.Keys(r.ctx, "*").Result()
 	if err != nil {
 		return nil, err

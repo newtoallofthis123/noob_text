@@ -1,0 +1,12 @@
+package templates
+
+templ Base(title string, body templ.Component){
+    <!DOCTYPE html>
+    <html lang="en">
+        @Header(title)
+        <body>
+            @Nav()
+            @body
+        </body>
+    </html>
+}

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/newtoallofthis123/noob_text/templates"
+	"github.com/newtoallofthis123/noob_text/utils"
 )
 
 type APIServer struct {
@@ -24,12 +25,7 @@ func (api *APIServer) handleGetByHash(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		c.HTML(http.StatusOK, "doc.html", gin.H{
-			"title":      doc.Title,
-			"author":     doc.Author,
-			"content":    doc.Content,
-			"created_at": doc.CreatedAt,
-		})
+		templates.Base(doc.Title, templates.Doc(doc)).Render(c.Request.Context(), c.Writer)
 		return
 	}
 
@@ -48,12 +44,7 @@ func (api *APIServer) handleGetByHash(c *gin.Context) {
 		fmt.Println(err)
 	}
 
-	c.HTML(http.StatusOK, "doc.html", gin.H{
-		"title":      doc.Title,
-		"author":     doc.Author,
-		"content":    doc.Content,
-		"created_at": doc.CreatedAt,
-	})
+	templates.Base(doc.Title, templates.Doc(doc)).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) handleCreateForm(c *gin.Context) {
@@ -67,9 +58,9 @@ func (api *APIServer) handleCreateForm(c *gin.Context) {
 		c.String(400, "Content cannot be empty")
 		return
 	}
-	hash := RanHash()
+	hash := utils.RanHash()
 
-	req := &CreateDocumentRequest{
+	req := &utils.CreateDocumentRequest{
 		Hash:    hash,
 		Title:   title,
 		Author:  author,
@@ -102,13 +93,13 @@ func (api *APIServer) handleUpdatePage(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "update.html", gin.H{
-		"hash":       doc.Hash,
-		"title":      doc.Title,
-		"author":     doc.Author,
-		"content":    doc.Content,
-		"created_at": doc.CreatedAt,
-	})
+	templates.Base("Update", templates.Update(
+		doc.Title,
+		doc.Content,
+		doc.Author,
+		doc.CreatedAt,
+		hash,
+	)).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) handleUpdate(c *gin.Context) {
@@ -141,7 +132,7 @@ func (api *APIServer) handleUpdate(c *gin.Context) {
 	//delete the old document from cache
 	api.cache.DeleteDoc(hash)
 
-	req := &UpdateDocumentRequest{
+	req := &utils.UpdateDocumentRequest{
 		Hash:    hash,
 		Title:   title,
 		Content: content,
@@ -167,7 +158,7 @@ func (api *APIServer) handleSearchPage(c *gin.Context) {
 		return
 	}
 
-	var results []Document
+	var results []utils.Document
 
 	for _, patient := range docs {
 		docString := fmt.Sprintf("%v", patient)
@@ -241,7 +232,7 @@ func (api *APIServer) handleSearch(c *gin.Context) {
 		return
 	}
 
-	var results []Document
+	var results []utils.Document
 
 	for _, doc := range docs {
 		docString := fmt.Sprintf("%v", doc)
@@ -252,17 +243,14 @@ func (api *APIServer) handleSearch(c *gin.Context) {
 		}
 	}
 
-	c.HTML(http.StatusOK, "search.html", gin.H{
-		"results": results,
-		"num":     len(results),
-	})
+	templates.Base("Search Results", templates.Search(results, len(results))).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) handleSignup(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
-	err := api.store.CreateUser(CreateUserRequest{
+	err := api.store.CreateUser(utils.CreateUserRequest{
 		Username: username,
 		Password: password,
 	})
@@ -280,7 +268,7 @@ func (api *APIServer) handleSignup(c *gin.Context) {
 		return
 	}
 
-	jwtToken, err := CreateJWT(user.Username)
+	jwtToken, err := utils.CreateJWT(user.Username)
 	if err != nil {
 		log.Default().Println(err)
 		c.JSON(500, err)
@@ -292,7 +280,7 @@ func (api *APIServer) handleSignup(c *gin.Context) {
 }
 
 func (api *APIServer) handleSignupPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "signup.html", gin.H{})
+	templates.Base("Signup", templates.SignUp()).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) handleLogin(c *gin.Context) {
@@ -306,12 +294,12 @@ func (api *APIServer) handleLogin(c *gin.Context) {
 		return
 	}
 
-	if !MatchPasswords(password, user.Password) {
+	if !utils.MatchPasswords(password, user.Password) {
 		c.String(http.StatusUnauthorized, "Invalid credentials")
 		return
 	}
 
-	jwtToken, err := CreateJWT(user.Username)
+	jwtToken, err := utils.CreateJWT(user.Username)
 	if err != nil {
 		log.Default().Println(err)
 		c.String(http.StatusInternalServerError, "Error creating JWT")
@@ -326,7 +314,7 @@ func (api *APIServer) handleLogin(c *gin.Context) {
 func (api *APIServer) handleLoginPage(c *gin.Context) {
 	cookie, err := c.Cookie("token")
 	if err != nil {
-		c.HTML(http.StatusOK, "login.html", gin.H{})
+		templates.Base("Login", templates.Login()).Render(c.Request.Context(), c.Writer)
 		return
 	}
 	if cookie != "" {
@@ -334,17 +322,13 @@ func (api *APIServer) handleLoginPage(c *gin.Context) {
 		return
 	}
 
-	jwt, err := ValidateJWT(cookie)
-	if err != nil {
-		c.HTML(http.StatusOK, "login.html", gin.H{})
-		return
-	}
-	if !jwt.Valid {
-		c.HTML(http.StatusOK, "login.html", gin.H{})
+	jwt, err := utils.ValidateJWT(cookie)
+	if err != nil || !jwt.Valid {
+		templates.Base("Login", templates.Login()).Render(c.Request.Context(), c.Writer)
 		return
 	}
 
-	c.HTML(http.StatusOK, "login.html", gin.H{})
+	templates.Base("Login", templates.Login()).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) handleSignout(c *gin.Context) {
@@ -366,13 +350,8 @@ func (api *APIServer) handleCheckAuth(c *gin.Context) {
 		return
 	}
 
-	jwt, err := ValidateJWT(cookie)
-	if err != nil {
-		c.String(http.StatusOK, "false")
-		return
-	}
-
-	if !jwt.Valid {
+	jwt, err := utils.ValidateJWT(cookie)
+	if err != nil || !jwt.Valid {
 		c.String(http.StatusOK, "false")
 		return
 	}
@@ -382,11 +361,7 @@ func (api *APIServer) handleCheckAuth(c *gin.Context) {
 
 func (api *APIServer) getUsername(c *gin.Context) string {
 	username, err := c.Cookie("username")
-	if err != nil {
-		c.Redirect(http.StatusFound, "/authsignout")
-		return ""
-	}
-	if username == "" {
+	if err != nil || username == "" {
 		c.Redirect(http.StatusFound, "/authsignout")
 		return ""
 	}
@@ -399,13 +374,11 @@ func (api *APIServer) handleHome(c *gin.Context) {
 
 	var username string = api.getUsername(c)
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"username": username,
-	})
+	templates.Base("NoobText", templates.IndexPage(username)).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) handleAbout(c *gin.Context) {
-	c.HTML(http.StatusOK, "about.html", gin.H{})
+	templates.Base("About NoobText", templates.AboutPage()).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) handleSource(c *gin.Context) {
@@ -422,10 +395,7 @@ func (api *APIServer) handleAccount(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "account.html", gin.H{
-		"username": username,
-		"docs":     docs,
-	})
+	templates.Base("Account", templates.Account(username, docs)).Render(c.Request.Context(), c.Writer)
 }
 
 // handleGetUserDocs is a handler for the GET /user/:username route which
@@ -439,29 +409,18 @@ func (api *APIServer) handleGetUserDocs(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "user.html", gin.H{
-		"username": username,
-		"docs":     docs,
-	})
+	templates.Base("User Docs", templates.User(username, docs)).Render(c.Request.Context(), c.Writer)
 }
 
 func (api *APIServer) onlyAuth(c *gin.Context) {
 	cookie, err := c.Cookie("token")
-	if err != nil {
-		c.Redirect(http.StatusFound, "/about")
-		return
-	}
-	if cookie == "" {
+	if err != nil || cookie == "" {
 		c.Redirect(http.StatusFound, "/about")
 		return
 	}
 
-	jwt, err := ValidateJWT(cookie)
-	if err != nil {
-		c.Redirect(http.StatusFound, "/login")
-		return
-	}
-	if !jwt.Valid {
+	jwt, err := utils.ValidateJWT(cookie)
+	if err != nil || !jwt.Valid {
 		c.Redirect(http.StatusFound, "/login")
 		return
 	}
@@ -471,27 +430,27 @@ func (api *APIServer) Start() error {
 
 	// use log file as gin's output
 	// check if logs folder exists
-	if _, err := os.Stat("logs"); os.IsNotExist(err) {
-		os.Mkdir("logs", 0755)
-	}
+	// if _, err := os.Stat("logs"); os.IsNotExist(err) {
+	// 	os.Mkdir("logs", 0755)
+	// }
 
-	_, err := os.Create(fmt.Sprintf("logs/%s.log", get_date()))
-	if err != nil {
-		return err
-	}
+	// _, err := os.Create(fmt.Sprintf("logs/%s.log", get_date()))
+	// if err != nil {
+	// 	return err
+	// }
 
-	f, err := os.OpenFile(fmt.Sprintf("logs/%s.log", get_date()), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return err
-	}
+	// f, err := os.OpenFile(fmt.Sprintf("logs/%s.log", get_date()), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// if err != nil {
+	// 	return err
+	// }
 
 	r := gin.Default()
-	gin.DefaultWriter = f
+	// gin.DefaultWriter = f
 
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/static", "./public")
 
-	err = r.SetTrustedProxies(nil)
+	err := r.SetTrustedProxies(nil)
 	if err != nil {
 		return err
 	}
