@@ -13,7 +13,7 @@ templ User(username string, docs []utils.Document) {
 				<p class="text-lg py-2">Here are all of posts</p>
 				<ul>
 					for _, doc := range docs {
-						<a href="/docs/{{ .Hash }}">
+						<a href={ templ.SafeURL("/docs/" + doc.Hash) }>
 							<li class="py-2">
 								<h2 class="text-xl pb-1">{ doc.Title }</h2>
 								<p class="doc_content">{ doc.Content }</p>

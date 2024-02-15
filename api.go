@@ -21,7 +21,6 @@ func (api *APIServer) handleGetByHash(c *gin.Context) {
 	hash := c.Param("hash")
 
 	doc, err := api.cache.GetDoc(hash)
-	fmt.Println("Getting using hash")
 	if err != nil {
 		fmt.Println(err)
 	} else {
