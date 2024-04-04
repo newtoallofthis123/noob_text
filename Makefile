@@ -10,7 +10,7 @@ clean:
 	@rm -f bin/$(BINARY_NAME)
 
 tailwind:
-	npx tailwindcss -i static/input.css -o static/output.css
+	npx tailwindcss -i public/input.css -o public/output.css
 
 css:
-	bunx tailwindcss -i static/input.css -o static/output.css --watch
+	bunx tailwindcss -i public/input.css -o public/output.css --watch

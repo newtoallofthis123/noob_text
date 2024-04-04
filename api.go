@@ -311,19 +311,11 @@ func (api *APIServer) handleLogin(c *gin.Context) {
 }
 
 func (api *APIServer) handleLoginPage(c *gin.Context) {
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		templates.Base("Login", templates.Login()).Render(c.Request.Context(), c.Writer)
-		return
-	}
-	if cookie != "" {
-		c.Redirect(http.StatusFound, "/")
-		return
-	}
+	cookie, _ := c.Cookie("token")
 
-	jwt, err := utils.ValidateJWT(cookie)
-	if err != nil || !jwt.Valid {
-		templates.Base("Login", templates.Login()).Render(c.Request.Context(), c.Writer)
+	_, err := utils.ValidateJWT(cookie)
+	if cookie != "" || err == nil {
+		c.Redirect(http.StatusFound, "/")
 		return
 	}
 
