@@ -225,21 +225,9 @@ func (api *APIServer) handleUserDelete(c *gin.Context) {
 
 func (api *APIServer) handleSearch(c *gin.Context) {
 	query := strings.ToLower(c.Query("q"))
-	docs, err := api.store.GetAll()
+	results, err := api.store.SearchDoc(query)
 	if err != nil {
 		c.JSON(500, err)
-		return
-	}
-
-	var results []utils.Document
-
-	for _, doc := range docs {
-		docString := fmt.Sprintf("%v", doc)
-		//remove all the -, :, _ and lowercase the string
-		docString = strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(docString, "-", ""), ":", ""), "{", ""))
-		if strings.Contains(docString, query) {
-			results = append(results, doc)
-		}
 	}
 
 	templates.Base("Search Results", templates.Search(results, len(results))).Render(c.Request.Context(), c.Writer)

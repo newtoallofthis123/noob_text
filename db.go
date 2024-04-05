@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"github.com/newtoallofthis123/noob_text/utils"
@@ -19,6 +20,7 @@ type Store interface {
 	UpdateDoc(req *utils.UpdateDocumentRequest) error
 	DeleteDoc(hash string) error
 	DeleteUser(username string) error
+	SearchDoc(query string) ([]utils.Document, error)
 }
 
 type DBInstance struct {
@@ -200,4 +202,36 @@ func (pq *DBInstance) DeleteUser(username string) error {
 
 	_, err := pq.db.Exec(query, username)
 	return err
+}
+
+func (pq *DBInstance) SearchDoc(query string) ([]utils.Document, error) {
+	sqlQuery := `
+	select * from content c  where to_tsvector(CONCAT(c.title, ' ', c.content, ' ', c.author)) 
+	@@ to_tsquery('english', '%s');
+	`
+
+	formattedQuery := strings.Split(query, " ")
+	actualQuery := strings.Join(formattedQuery, " & ")
+
+	sqlQuery = fmt.Sprintf(sqlQuery, actualQuery)
+	fmt.Println(sqlQuery)
+
+	var documents []utils.Document
+
+	rows, err := pq.db.Query(sqlQuery)
+	if err != nil {
+		return documents, err
+	}
+
+	for rows.Next() {
+		var document utils.Document
+		err := rows.Scan(&document.Hash, &document.Author, &document.Title, &document.Content, &document.CreatedAt, &document.UpdatedAt)
+		if err != nil {
+			return documents, err
+		}
+
+		documents = append(documents, document)
+	}
+
+	return documents, nil
 }
