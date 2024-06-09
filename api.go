@@ -244,7 +244,7 @@ func (api *APIServer) handleSignup(c *gin.Context) {
 
 	if err != nil {
 		log.Default().Println(err)
-		c.JSON(500, err)
+		c.String(500, err.Error())
 		return
 	}
 

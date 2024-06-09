@@ -1,16 +1,13 @@
 package utils
 
 type Env struct {
-	User          string
-	Password      string
-	DB            string
-	PORT          string
-	URL           string
+	DatabaseUrl   string
 	JwtSecret     string
 	RedisURL      string
 	RedisPort     string
 	RedisDB       string
 	RedisPassword string
+	Port          string
 }
 
 type CreateDocumentRequest struct {

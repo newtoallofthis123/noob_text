@@ -18,16 +18,13 @@ func GetEnv() *Env {
 		panic(err)
 	}
 	env := &Env{
-		User:          os.Getenv("USER"),
-		Password:      os.Getenv("PASSWORD"),
-		DB:            os.Getenv("DB"),
-		PORT:          os.Getenv("PORT"),
-		URL:           os.Getenv("URL"),
+		DatabaseUrl:   os.Getenv("DATABASE_URL"),
 		RedisURL:      os.Getenv("REDIS_URL"),
 		RedisPort:     os.Getenv("REDIS_PORT"),
 		RedisDB:       os.Getenv("REDIS_DB"),
 		RedisPassword: os.Getenv("REDIS_PASSWORD"),
 		JwtSecret:     os.Getenv("JWT_SECRET"),
+		Port:          os.Getenv("PORT"),
 	}
 
 	return env

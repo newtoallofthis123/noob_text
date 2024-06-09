@@ -60,9 +60,7 @@ func (pq *DBInstance) createTable() error {
 
 func NewStoreInstance() (*DBInstance, error) {
 	env := utils.GetEnv()
-	connStr := fmt.Sprintf("user=%s password=%s host=%s dbname=%s port=%s sslmode=disable", env.User, env.Password, env.URL, env.DB, env.PORT)
-	fmt.Println(connStr)
-	db, err := sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", env.DatabaseUrl)
 	if err != nil {
 		return nil, err
 	}

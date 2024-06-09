@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/newtoallofthis123/noob_text/utils"
+)
 
 func main() {
 
@@ -18,9 +22,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	env := utils.GetEnv()
 
 	api := APIServer{
-		listenAddr: ":3579",
+		listenAddr: ":" + env.Port,
 		store:      store,
 		cache:      cache,
 	}
